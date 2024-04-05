@@ -29,6 +29,10 @@ public class Epic extends Task {
         subTasks.remove(subtask.getId());
     }
 
+    public void removeAllSubTasks() {
+        subTasks.clear();
+    }
+
     public void updateStatus(Subtask subtask) {
         subTasks.put(subtask.getId(), subtask);
         status = epicStatus();

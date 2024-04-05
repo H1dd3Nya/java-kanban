@@ -63,6 +63,8 @@ public class Main {
         System.out.println("Epic by id [2]: " + taskManager.getEpic(2));
         System.out.println("Epic's [id: 2] subtasks: " + taskManager.getEpicSubTasks(epic));
 
-
+        taskManager.removeAllSubTasks();
+        System.out.println("All subtasks: " + taskManager.getAllSubtasks());
+        System.out.println("Epic's [id: 2] subtasks: " + taskManager.getEpicSubTasks(epic));
     }
 }
