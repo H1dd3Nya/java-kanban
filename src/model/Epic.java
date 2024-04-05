@@ -38,6 +38,10 @@ public class Epic extends Task {
         status = epicStatus();
     }
 
+    public void updateStatus() {
+        status = epicStatus();
+    }
+
     private Status epicStatus() {
         int doneStatus = 0;
         int newStatus = 0;
