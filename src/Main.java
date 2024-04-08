@@ -14,13 +14,17 @@ public class Main {
                 Status.NEW, epic.getId()));
         System.out.println("Subtask created: " + subtask);
 
+        System.out.println();
         System.out.println("All tasks: " + taskManager.getAllTasks());
         System.out.println("All epics: " + taskManager.getAllEpics());
         System.out.println("All subtasks: " + taskManager.getAllSubtasks());
 
+        System.out.println();
         System.out.println("Task by id [1]: " + taskManager.getTask(1));
         System.out.println("Epic by id [2]: " + taskManager.getEpic(2));
         System.out.println("Subtask by id [3]: " + taskManager.getSubTask(3));
+
+        System.out.println();
 
         Task taskUpdated = new Task(task.getName(), "Finished", task.getId(), Status.DONE);
         taskManager.updateTask(taskUpdated);
@@ -35,10 +39,12 @@ public class Main {
         taskManager.updateSubTask(subTaskUpdated);
         System.out.println(subtask + " updated with new data: " + subTaskUpdated);
 
+        System.out.println();
         System.out.println("All tasks: " + taskManager.getAllTasks());
         System.out.println("All epics: " + taskManager.getAllEpics());
         System.out.println("All subtasks: " + taskManager.getAllSubtasks());
 
+        System.out.println();
         System.out.println("Task " + taskManager.getTask(task.getId()) + " deleted!");
         taskManager.deleteTask(task.getId());
         System.out.println("All tasks: " + taskManager.getAllTasks());
@@ -50,6 +56,7 @@ public class Main {
         subtask1 = taskManager.createSubTask(subtask1);
         subtask2 = taskManager.createSubTask(subtask2);
 
+        System.out.println();
         System.out.println("Epic by id [2]: " + taskManager.getEpic(2));
         System.out.println("Epic's [id: 2] subtasks: " + taskManager.getEpicSubTasks(epic));
 
@@ -60,10 +67,12 @@ public class Main {
                 epic.getId());
         taskManager.updateSubTask(subtask2);
 
+        System.out.println();
         System.out.println("Epic by id [2]: " + taskManager.getEpic(2));
         System.out.println("Epic's [id: 2] subtasks: " + taskManager.getEpicSubTasks(epic));
 
         taskManager.removeAllSubTasks();
+        System.out.println();
         System.out.println("All subtasks: " + taskManager.getAllSubtasks());
         System.out.println("Epic's [id: 2] subtasks: " + taskManager.getEpicSubTasks(epic));
     }
