@@ -1,9 +1,11 @@
-package service;
+package service.taskManagers;
 
 import model.Status;
 import model.Task;
 import model.Epic;
 import model.Subtask;
+import service.HistoryManager;
+import service.TaskManager;
 
 import java.util.ArrayList;
 import java.util.HashMap;

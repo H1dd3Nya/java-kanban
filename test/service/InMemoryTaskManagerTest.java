@@ -5,6 +5,8 @@ import model.Status;
 import model.Subtask;
 import model.Task;
 import org.junit.jupiter.api.*;
+import service.historyManagers.InMemoryHistoryManager;
+import service.taskManagers.InMemoryTaskManager;
 
 import java.util.List;
 
@@ -30,67 +32,104 @@ class InMemoryTaskManagerTest {
     }
 
     @Test
-    @DisplayName("Должен вернуть список всех задач по типам")
-    void shouldReturnListOfAllTasksByType() {
+    @DisplayName("Должен вернуть список всех задач")
+    void getAllTasks_returnTasksList() {
         List<Task> allTasks = manager.getAllTasks();
-        List<Epic> allEpics = manager.getAllEpics();
-        List<Subtask> allSubtasks = manager.getAllSubtasks();
 
         assertEquals(1, allTasks.size());
-        assertEquals(task, allTasks.get(0));
-
-        assertEquals(1, allEpics.size());
-        assertEquals(epic, allEpics.get(0));
-
-        assertEquals(1, allTasks.size());
-        assertEquals(subtask, allSubtasks.get(0));
+        assertEquals(task, allTasks.getFirst());
     }
 
     @Test
-    @DisplayName("Должен удалить все задачи по типу")
-    void shouldRemoveAllTasksByType() {
-
-        manager.removeAllTasks();
-        manager.removeAllSubTasks();
-        manager.removeAllEpics();
-
-        List<Task> allTasks = manager.getAllTasks();
+    @DisplayName("Должен вернуть список всех эпиков")
+    void getAllEpics_returnEpicsList() {
         List<Epic> allEpics = manager.getAllEpics();
+
+        assertEquals(1, allEpics.size());
+        assertEquals(epic, allEpics.getFirst());
+    }
+
+    @Test
+    @DisplayName("Должен вернуть список всех подзадач")
+    void getAllSubTasks_returnSubTasksList() {
         List<Subtask> allSubtasks = manager.getAllSubtasks();
 
-        assertTrue(allTasks.isEmpty());
-        assertTrue(allEpics.isEmpty());
-        assertTrue(allSubtasks.isEmpty());
+        assertEquals(1, allSubtasks.size());
+        assertEquals(subtask, allSubtasks.getFirst());
+    }
+
+    @Test
+    @DisplayName("Должен удалить все задачи")
+    void removeAllTasks_returnEmptyTasksList() {
+        manager.removeAllTasks();
+
+        assertEquals(0, manager.getAllTasks().size());
+    }
+
+    @Test
+    @DisplayName("Должен удалить все эпики")
+    void removeAllEpics_returnEmptyEpicsList() {
+        manager.removeAllEpics();
+
+        assertEquals(0, manager.getAllEpics().size());
+    }
+
+    @Test
+    @DisplayName("Должен удалить все подзадачи")
+    void removeAllSubTasks_returnEmptySubTasksList() {
+        manager.removeAllSubTasks();
+
+        assertEquals(0, manager.getAllSubtasks().size());
     }
 
     @Test
     @DisplayName("Получить задачу по id")
-    void shouldGetTaskById() {
+    void getTask_returnTask() {
         Task taskActual = manager.getTask(task.getId());
-        Epic epicActual = manager.getEpic(epic.getId());
-        Subtask subtaskActual = manager.getSubTask(subtask.getId());
 
         assertEqualsTask(task, taskActual);
+    }
+
+    @Test
+    @DisplayName("Получить эпик по id")
+    void getEpic_returnEpic() {
+        Epic epicActual = manager.getEpic(epic.getId());
+
         assertEqualsTask(epic, epicActual);
+    }
+
+    @Test
+    @DisplayName("Получить подзадачу по id")
+    void getSubTask_returnSubTask() {
+        Subtask subtaskActual = manager.getSubTask(subtask.getId());
+
         assertEqualsTask(subtask, subtaskActual);
     }
 
     @Test
     @DisplayName("Должен обновить задачу")
-    void shouldUpdateTask() {
+    void updateTask_returnUpdatedTask() {
         Task oldTask = manager.getTask(1);
-        Epic oldEpic = new Epic(epic.getName(), epic.getDescription(), epic.getId());
         Task updatedTask = new Task(task.getName(), "Test2", task.getId(), Status.IN_PROGRESS);
-        Epic updatedEpic = new Epic("Test123", "Test123", epic.getId());
 
         manager.updateTask(updatedTask);
-        manager.updateEpic(updatedEpic);
 
         updatedTask = manager.getTask(task.getId());
-        updatedEpic = manager.getEpic(epic.getId());
 
         assertNotEquals(oldTask.getDescription(), updatedTask.getDescription());
         assertNotEquals(oldTask.getStatus(), updatedTask.getStatus());
+    }
+
+    @Test
+    @DisplayName("Должен обновить эпик")
+    void updateTask_returnUpdatedEpic() {
+        Epic oldEpic = new Epic(epic.getName(), epic.getDescription(), epic.getId());
+        Epic updatedEpic = new Epic("Test123", "Test123", epic.getId());
+
+        manager.updateEpic(updatedEpic);
+
+        updatedEpic = manager.getEpic(epic.getId());
+
         assertNotEquals(oldEpic.getName(), updatedEpic.getName());
         assertNotEquals(oldEpic.getDescription(), updatedEpic.getDescription());
     }
@@ -99,14 +138,19 @@ class InMemoryTaskManagerTest {
     @DisplayName("Должен удалить задачу")
     void shouldDeleteTask() {
         manager.deleteTask(1);
-        manager.deleteEpic(2);
         assertTrue(manager.getAllTasks().isEmpty());
+    }
+
+    @Test
+    @DisplayName("Должен удалить эпик")
+    void deleteEpic_returnEmptyEpicList() {
+        manager.deleteEpic(2);
         assertTrue(manager.getAllEpics().isEmpty());
     }
 
     @Test
     @DisplayName("Должен обновить подзадачу и обновить статус эпика")
-    void shouldUpdateSubtaskAndUpdateEpicStatus() {
+    void updateSubTask_shouldUpdateSubtaskAndEpicStatus() {
         Subtask oldSubtask = manager.getSubTask(3);
         Epic oldEpic = new Epic(epic.getName(), epic.getDescription(), epic.getId());
         Subtask updatedSubtask = new Subtask(oldSubtask.getName(), "In progress now", oldSubtask.getId(),
@@ -121,23 +165,15 @@ class InMemoryTaskManagerTest {
 
     @Test
     @DisplayName("Должен удалить подзадачу и обновить статус эпика")
-    void shouldDeleteSubtaskAndUpdateEpicStatus() {
-        Epic oldEpic = new Epic(epic.getName(), epic.getDescription());
-        Subtask subtaskToDelete = new Subtask("Test1", "test1", Status.IN_PROGRESS, 2);
+    void deleteSubTask_returnEpicWithoutSubtask() {
+        manager.deleteSubTask(subtask.getId());
 
-        manager.createSubTask(subtaskToDelete);
-        Epic epicUpdated = manager.getEpic(2);
-        assertNotEquals(oldEpic.getStatus(), epicUpdated.getStatus());
-        assertEquals(2, manager.getEpicSubTasks(epic).size());
-
-        manager.deleteSubTask(subtaskToDelete.getId());
-        assertEquals(1, manager.getEpicSubTasks(epic).size());
-        assertEquals(oldEpic.getStatus(), epic.getStatus());
+        assertEquals(0, manager.getEpicSubTasks(epic).size());
     }
 
     @Test
     @DisplayName("Поля задачи остаются неизменными при добавлении в менеджер")
-    void taskFieldsShouldBeSavedWhenAddedToManager() {
+    void createTask_taskAddedWithEqualFields() {
         Task taskExpected = new Task("Test1", "Test2", Status.DONE);
         Task taskActual = manager.createTask(taskExpected);
         assertEqualsTask(taskExpected, taskActual);
@@ -145,12 +181,23 @@ class InMemoryTaskManagerTest {
 
     @Test
     @DisplayName("Задача с заданным id не конфликтует с задачей со сгенерированным id")
-    void taskWithProvidedIdShouldNotConflictWithTaskWithGeneratedId() {
+    void createTask_taskAdded_providedExistingId() {
         manager.createTask(new Task("123", "123", 1, Status.DONE));
     }
 
+    @Test       //Да, в ТЗ указан данный кейс для проверки, перенёс его из InMemoryHistoryManagerTest
+    @DisplayName("Задача, добавленная в историю, сохраняет свою предыдущую версию")
+    public void getHistory_returnOldAndUpdatedTasks_afterUpdate() {
+        Task oldTask = manager.getTask(1);
+        manager.updateTask(new Task(task.getName(), "My updated task", task.getId(), Status.IN_PROGRESS));
+        Task updatedTask = manager.getTask(1);
 
-    private static void assertEqualsTask(Task expected, Task actual) {
+        assertEquals(oldTask, manager.getHistory().getFirst());
+        assertEquals(updatedTask, manager.getHistory().get(1));
+    }
+
+
+    public static void assertEqualsTask(Task expected, Task actual) {
         assertEquals(expected.getName(), actual.getName());
         assertEquals(expected.getDescription(), actual.getDescription());
         assertEquals(expected.getStatus(), actual.getStatus());

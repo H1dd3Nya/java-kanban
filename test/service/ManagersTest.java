@@ -1,6 +1,8 @@
 package service;
 
 import org.junit.jupiter.api.Test;
+import service.historyManagers.InMemoryHistoryManager;
+import service.taskManagers.InMemoryTaskManager;
 
 
 import static org.junit.jupiter.api.Assertions.*;
