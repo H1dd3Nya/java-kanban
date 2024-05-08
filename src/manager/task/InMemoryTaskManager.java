@@ -1,11 +1,10 @@
-package service.taskManagers;
+package manager.task;
 
 import model.Status;
 import model.Task;
 import model.Epic;
 import model.Subtask;
-import service.HistoryManager;
-import service.TaskManager;
+import manager.history.HistoryManager;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -24,10 +23,6 @@ public class InMemoryTaskManager implements TaskManager {
         this.epics = new HashMap<>();
         this.subTasks = new HashMap<>();
         this.historyManager = historyManager;
-    }
-
-    private int generateId() {
-        return seq++;
     }
 
     @Override
@@ -124,6 +119,7 @@ public class InMemoryTaskManager implements TaskManager {
     @Override
     public void deleteTask(int id) {
         tasks.remove(id);
+        historyManager.remove(id);
     }
     @Override
     public void deleteEpic(int id) {
@@ -131,14 +127,17 @@ public class InMemoryTaskManager implements TaskManager {
 
         for (Integer subTask : epic.getSubTasks()) {
             subTasks.remove(subTask);
+            historyManager.remove(subTask);
         }
 
         epics.remove(id);
+        historyManager.remove(id);
     }
     @Override
     public void deleteSubTask(int id) {
         removeSubTaskFromEpic(subTasks.get(id));
         subTasks.remove(id);
+        historyManager.remove(id);
     }
 
     @Override
@@ -155,6 +154,10 @@ public class InMemoryTaskManager implements TaskManager {
     @Override
     public List<Task> getHistory() {
         return historyManager.getHistory();
+    }
+
+    private int generateId() {
+        return seq++;
     }
 
     private void addSubTask(Subtask subtask) {
