@@ -1,7 +1,5 @@
 package manager.history;
 
-import manager.Managers;
-import manager.history.HistoryManager;
 import model.Epic;
 import model.Status;
 import model.Subtask;
@@ -10,19 +8,16 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
-
-import java.util.ArrayList;
 import java.util.List;
 
-import static org.junit.jupiter.api.Assertions.*;
-import static manager.task.InMemoryTaskManagerTest.assertEqualsTask;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 class InMemoryHistoryManagerTest {
-    private static final HistoryManager historyManager = Managers.getDefaultHistory();
+    private static final HistoryManager historyManager = new InMemoryHistoryManager();
 
     private static final Task task = new Task("First task", "My first task!", 1, Status.NEW);
     private static final Epic epic = new Epic("First Epic", "My first Epic", 2);
-    private static final Subtask subtask = new Subtask("First subtask", "My first subtask",3,
+    private static final Subtask subtask = new Subtask("First subtask", "My first subtask", 3,
             Status.NEW, epic.getId());
 
     @BeforeEach

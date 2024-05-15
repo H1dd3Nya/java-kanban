@@ -13,11 +13,24 @@ class Node {
         this.prev = prev;
     }
 
+    public Node getNext() {
+        return next;
+    }
+
+    protected void setNext(Node next) {
+        this.next = next;
+    }
+
+    public Node getPrev() {
+        return prev;
+    }
+
     protected void setPrev(Node prev) {
         this.prev = prev;
     }
 
-    protected Task getData() {
+    public Task getData() {
         return data;
     }
+
 }
