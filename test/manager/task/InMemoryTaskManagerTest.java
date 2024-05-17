@@ -1,19 +1,21 @@
-package service;
+package manager.task;
 
+import manager.history.HistoryManager;
+import manager.task.TaskManager;
 import model.Epic;
 import model.Status;
 import model.Subtask;
 import model.Task;
 import org.junit.jupiter.api.*;
-import service.historyManagers.InMemoryHistoryManager;
-import service.taskManagers.InMemoryTaskManager;
+import manager.history.InMemoryHistoryManager;
+import manager.task.InMemoryTaskManager;
 
 import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.*;
 
 @DisplayName("Менеджер задач")
-class InMemoryTaskManagerTest {
+public class InMemoryTaskManagerTest {
 
     private static TaskManager manager;
     private Task task;
@@ -185,21 +187,25 @@ class InMemoryTaskManagerTest {
         manager.createTask(new Task("123", "123", 1, Status.DONE));
     }
 
-    @Test       //Да, в ТЗ указан данный кейс для проверки, перенёс его из InMemoryHistoryManagerTest
-    @DisplayName("Задача, добавленная в историю, сохраняет свою предыдущую версию")
-    public void getHistory_returnOldAndUpdatedTasks_afterUpdate() {
-        Task oldTask = manager.getTask(1);
-        manager.updateTask(new Task(task.getName(), "My updated task", task.getId(), Status.IN_PROGRESS));
-        Task updatedTask = manager.getTask(1);
+    @Test
+    @DisplayName("Возвращает историю задач")
+    void getHistory_returnListOfTasks() {
+        manager.getEpic(epic.getId());
+        manager.getTask(task.getId());
+        manager.getSubTask(subtask.getId());
 
-        assertEquals(oldTask, manager.getHistory().getFirst());
-        assertEquals(updatedTask, manager.getHistory().get(1));
+        List<Task> history = manager.getHistory();
+
+        assertEquals(3, history.size());
+        assertEqualsTask(epic, history.getFirst());
+        assertEqualsTask(task, history.get(1));
+        assertEqualsTask(subtask, history.get(2));
     }
-
 
     public static void assertEqualsTask(Task expected, Task actual) {
         assertEquals(expected.getName(), actual.getName());
         assertEquals(expected.getDescription(), actual.getDescription());
         assertEquals(expected.getStatus(), actual.getStatus());
     }
+
 }
