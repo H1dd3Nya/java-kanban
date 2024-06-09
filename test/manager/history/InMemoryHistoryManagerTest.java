@@ -12,6 +12,7 @@ import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
+@DisplayName("Менеджер Истории")
 class InMemoryHistoryManagerTest {
     private static final HistoryManager historyManager = new InMemoryHistoryManager();
 

@@ -41,6 +41,14 @@ public class Task {
         return name;
     }
 
+    public Type getType() {
+        return Type.TASK;
+    }
+
+    public Integer getEpicId() {
+        return null;
+    }
+
     public void setName(String name) {
         this.name = name;
     }
