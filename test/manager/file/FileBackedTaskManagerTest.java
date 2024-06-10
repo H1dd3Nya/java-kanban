@@ -38,15 +38,15 @@ class FileBackedTaskManagerTest {
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
-
-        task = manager.createTask(new Task("Test", "Test", Status.NEW));
-        epic = manager.createEpic(new Epic("Test", "test"));
-        subtask = manager.createSubTask(new Subtask("Test", "Test", Status.NEW, epic.getId()));
     }
 
     @Test
     @DisplayName("Должен сохранить задачу в файл")
     void save_taskSaved() {
+        task = manager.createTask(new Task("Test", "Test", Status.NEW));
+        epic = manager.createEpic(new Epic("Test", "test"));
+        subtask = manager.createSubTask(new Subtask("Test", "Test", Status.NEW, epic.getId()));
+
         String lineWithTask;
         String lineWithEpic;
         String lineWithSubtask;
@@ -60,9 +60,9 @@ class FileBackedTaskManagerTest {
             throw new RuntimeException(e);
         }
 
-        assertEquals(lineWithTask, manager.toString(task));
-        assertEquals(lineWithEpic, manager.toString(epic));
-        assertEquals(lineWithSubtask, manager.toString(subtask));
+        assertEquals(lineWithTask, TaskConverter.toString(task));
+        assertEquals(lineWithEpic, TaskConverter.toString(epic));
+        assertEquals(lineWithSubtask, TaskConverter.toString(subtask));
 
 
     }
@@ -70,15 +70,19 @@ class FileBackedTaskManagerTest {
     @Test
     @DisplayName("Должен сохранить задачу в файл")
     void loadDataFromFile_returnTask() {
+        task = manager.createTask(new Task("Test", "Test", Status.NEW));
+        epic = manager.createEpic(new Epic("Test", "test"));
+        subtask = manager.createSubTask(new Subtask("Test", "Test", Status.NEW, epic.getId()));
+
         Task taskFromFile;
         Task epicFromFile;
         Task subtaskFromFile;
 
         try (final BufferedReader reader = new BufferedReader(new FileReader(path.toFile(), StandardCharsets.UTF_8))) {
             reader.readLine();
-            taskFromFile = manager.fromString(reader.readLine());
-            epicFromFile = manager.fromString(reader.readLine());
-            subtaskFromFile = manager.fromString(reader.readLine());
+            taskFromFile = TaskConverter.fromString(reader.readLine());
+            epicFromFile = TaskConverter.fromString(reader.readLine());
+            subtaskFromFile = TaskConverter.fromString(reader.readLine());
         } catch (IOException e) {
             throw new RuntimeException(e);
         }

@@ -23,6 +23,6 @@ class ManagersTest {
 
     @Test
     public void shouldGetDefaultFileBackedManager() {
-        assertInstanceOf(FileBackedTaskManager.class, Managers.getDefaultFile(Paths.get("resources/tasks.csv")));
+        assertInstanceOf(FileBackedTaskManager.class, Managers.getFileBackedTaskManager(Paths.get("resources/tasks.csv")));
     }
 }

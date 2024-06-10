@@ -23,9 +23,4 @@ public class Epic extends Task {
     public Type getType() {
         return Type.EPIC;
     }
-
-    @Override
-    public Integer getEpicId() {
-        return getId();
-    }
 }

@@ -177,12 +177,12 @@ public class InMemoryTaskManager implements TaskManager {
         return seq++;
     }
 
-    private void addSubTask(Subtask subtask) {
+    protected void addSubTask(Subtask subtask) {
         Epic epic = epics.get(subtask.getEpicId());
         epic.getSubTasks().add(subtask.getId());
     }
 
-    private void updateEpicStatus(Epic epic) {
+    protected void updateEpicStatus(Epic epic) {
         List<Integer> subTasksIds = epic.getSubTasks();
 
         if (subTasksIds.isEmpty()) {
