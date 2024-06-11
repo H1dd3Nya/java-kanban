@@ -75,11 +75,6 @@ public class FileBackedTaskManager extends InMemoryTaskManager {
                         subTasks.put(id, (Subtask) task);
                     }
 
-                    for (Subtask subtask : subTasks.values()) {
-                        addSubTask(subtask);
-                        updateEpicStatus(getEpic(subtask.getEpicId()));
-                    }
-
                     if (maxId < id) {
                         maxId = id;
                     }
@@ -91,9 +86,12 @@ public class FileBackedTaskManager extends InMemoryTaskManager {
                 }
             }
         } catch (IOException e) {
-            return;
-        } catch (ManagerSaveException e) {
             throw new ManagerSaveException(path);
+        }
+
+        for (Subtask subtask : subTasks.values()) {
+            addSubTask(subtask);
+            updateEpicStatus(getEpic(subtask.getEpicId()));
         }
 
         seq = maxId;
