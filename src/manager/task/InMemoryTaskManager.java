@@ -1,5 +1,6 @@
 package manager.task;
 
+import exception.NotFoundException;
 import manager.history.HistoryManager;
 import model.Epic;
 import model.Status;
@@ -11,12 +12,12 @@ import java.util.HashMap;
 import java.util.List;
 
 public class InMemoryTaskManager implements TaskManager {
-    private int seq = 1;
+    protected int seq = 1;
 
-    private final HashMap<Integer, Task> tasks;
-    private final HashMap<Integer, Epic> epics;
-    private final HashMap<Integer, Subtask> subTasks;
-    private final HistoryManager historyManager;
+    protected final HashMap<Integer, Task> tasks;
+    protected final HashMap<Integer, Epic> epics;
+    protected final HashMap<Integer, Subtask> subTasks;
+    protected final HistoryManager historyManager;
 
     public InMemoryTaskManager(HistoryManager historyManager) {
         this.tasks = new HashMap<>();
@@ -123,7 +124,7 @@ public class InMemoryTaskManager implements TaskManager {
     public void updateEpic(Epic epic) {
         Epic saved = epics.get(epic.getId());
         if (saved == null) {
-            return;
+            throw new NotFoundException("Не найден эпик: " + epic.getId());
         }
         saved.setName(epic.getName());
         saved.setDescription(epic.getDescription());
@@ -176,12 +177,12 @@ public class InMemoryTaskManager implements TaskManager {
         return seq++;
     }
 
-    private void addSubTask(Subtask subtask) {
+    protected void addSubTask(Subtask subtask) {
         Epic epic = epics.get(subtask.getEpicId());
         epic.getSubTasks().add(subtask.getId());
     }
 
-    private void updateEpicStatus(Epic epic) {
+    protected void updateEpicStatus(Epic epic) {
         List<Integer> subTasksIds = epic.getSubTasks();
 
         if (subTasksIds.isEmpty()) {
