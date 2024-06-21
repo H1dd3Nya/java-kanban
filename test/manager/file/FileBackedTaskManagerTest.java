@@ -1,7 +1,6 @@
 package manager.file;
 
-import manager.history.HistoryManager;
-import manager.history.InMemoryHistoryManager;
+import manager.TaskManagerTest;
 import model.Epic;
 import model.Status;
 import model.Subtask;
@@ -16,11 +15,13 @@ import java.io.FileReader;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Path;
+import java.time.Duration;
+import java.time.LocalDateTime;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 @DisplayName("Файловый менеджер задач")
-class FileBackedTaskManagerTest {
+class FileBackedTaskManagerTest extends TaskManagerTest<FileBackedTaskManager> {
 
     private static FileBackedTaskManager manager;
     private Task task;
@@ -28,24 +29,29 @@ class FileBackedTaskManagerTest {
     private Subtask subtask;
     private Path path;
 
-
-    @BeforeEach
-    public void beforeEach() {
-        HistoryManager historyManager = new InMemoryHistoryManager();
+    @Override
+    protected FileBackedTaskManager createManager() {
         try {
             path = File.createTempFile("tasks-test", "csv").toPath();
-            manager = new FileBackedTaskManager(path);
+            return new FileBackedTaskManager(path);
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
     }
 
+
+    @BeforeEach
+    public void beforeEach() {
+        manager = createManager();
+    }
+
     @Test
     @DisplayName("Должен сохранить задачу в файл")
     void save_taskSaved() {
-        task = manager.createTask(new Task("Test", "Test", Status.NEW));
+        task = manager.createTask(new Task("", "", Status.NEW, Duration.ofMinutes(60), LocalDateTime.now()));
         epic = manager.createEpic(new Epic("Test", "test"));
-        subtask = manager.createSubTask(new Subtask("Test", "Test", Status.NEW, epic.getId()));
+        subtask = manager.createSubTask(new Subtask("Subtask2", "subtask", Status.NEW,
+                epic.getId(), LocalDateTime.now().plusDays(5), Duration.ofMinutes(100)));
 
         String lineWithTask;
         String lineWithEpic;
@@ -72,7 +78,8 @@ class FileBackedTaskManagerTest {
     void loadDataFromFile_returnTask() {
         task = manager.createTask(new Task("Test", "Test", Status.NEW));
         epic = manager.createEpic(new Epic("Test", "test"));
-        subtask = manager.createSubTask(new Subtask("Test", "Test", Status.NEW, epic.getId()));
+        subtask = manager.createSubTask(new Subtask("Test", "Test", Status.NEW, epic.getId(),
+                LocalDateTime.now().plusYears(1), Duration.ofMinutes(120)));
 
         Task taskFromFile;
         Task epicFromFile;
