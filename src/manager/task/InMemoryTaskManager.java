@@ -163,7 +163,7 @@ public class InMemoryTaskManager implements TaskManager {
             throw new NotFoundException("Эпик с id: ", subtask.getEpicId());
         }
 
-        if (subtask.getStartTime() != null && sortedTasks.contains(subtask)) {
+        if (subtask.getStartTime() != null) {
             checkTaskTime(subtask);
             try {
                 sortedTasks.remove(original);
@@ -194,11 +194,7 @@ public class InMemoryTaskManager implements TaskManager {
     public void deleteTask(int id) {
         tasks.remove(id);
         historyManager.remove(id);
-
-        try {
-            sortedTasks.remove(tasks.get(id));
-        } catch (NullPointerException e) {
-        }
+        sortedTasks.remove(tasks.get(id));
     }
 
     @Override
