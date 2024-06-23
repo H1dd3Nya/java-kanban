@@ -7,24 +7,33 @@ import java.time.LocalDateTime;
 
 public class TaskConverter {
     public static String toString(Task task) {
-        return task.getId() + ","
-                + task.getType() + ","
-                + task.getName() + ","
-                + task.getStatus() + ","
-                + task.getDescription() + ",null,"
-                + task.getStartTime() + ","
-                + task.getDuration().toMinutes();
+        if (task.getStartTime() != null) {
+            return "%d,%s,%s,%s,%s,null,%s,%d,%s".formatted(task.getId(), task.getType(), task.getName(),
+                    task.getStatus(), task.getDescription(), task.getStartTime(), task.getDuration().toMinutes(),
+                    task.getEndTime());
+        }
+        return "%d,%s,%s,%s,%s,null,null,%d,null".formatted(task.getId(), task.getType(), task.getName(),
+                task.getStatus(), task.getDescription(), task.getDuration().toMinutes());
     }
 
     public static String toString(Subtask subtask) {
-        return subtask.getId() + ","
-                + subtask.getType() + ","
-                + subtask.getName() + ","
-                + subtask.getStatus() + ","
-                + subtask.getDescription() + ","
-                + subtask.getEpicId() + ","
-                + subtask.getStartTime() + ","
-                + subtask.getDuration().toMinutes();
+        if (subtask.getStartTime() != null) {
+            return "%d,%s,%s,%s,%s,%d,%s,%d,%s".formatted(subtask.getId(), subtask.getType(), subtask.getName(),
+                    subtask.getStatus(), subtask.getDescription(), subtask.getEpicId(),
+                    subtask.getStartTime(), subtask.getDuration().toMinutes(), subtask.getEndTime());
+        }
+        return "%d,%s,%s,%s,%s,%d,null,%d,null".formatted(subtask.getId(), subtask.getType(), subtask.getName(),
+                subtask.getStatus(), subtask.getDescription(), subtask.getEpicId(), subtask.getDuration().toMinutes());
+    }
+
+    public static String toString(Epic epic) {
+        if (epic.getStartTime() != null) {
+            return "%d,%s,%s,%s,%s,null,%s,%s,%s".formatted(epic.getId(), epic.getType(), epic.getName(),
+                    epic.getStatus(), epic.getDescription(), epic.getStartTime(), epic.getDuration().toMinutes(),
+                    epic.getEndTime());
+        }
+        return "%d,%s,%s,%s,%s,null,null,%d,null".formatted(epic.getId(), epic.getType(), epic.getName(),
+                epic.getStatus(), epic.getDescription(), epic.getDuration().toMinutes());
     }
 
     public static Task fromString(String value) {
@@ -38,35 +47,32 @@ public class TaskConverter {
         }
 
         LocalDateTime startTime = null;
-        Duration duration = null;
+        LocalDateTime endTime = null;
 
-        try {
+        if (!(columns[6].equals("null") && columns[8].equals("null"))) {
             startTime = LocalDateTime.parse(columns[6]);
-            duration = Duration.ofMinutes(Long.parseLong(columns[7]));
-        } catch (RuntimeException e) {
-            System.out.println(e.getMessage());
+            endTime = LocalDateTime.parse(columns[8]);
         }
 
         Integer id = Integer.parseInt(columns[0]);
         String name = columns[2];
         String description = columns[4];
         Status status = Status.valueOf(columns[3]);
+        Duration duration = Duration.ofMinutes(Long.parseLong(columns[7]));
 
-        Task task = null;
         switch (type) {
             case TASK:
-                task = new Task(name, description, id, status, duration, startTime);
-                break;
+                return new Task(name, description, id, status, startTime, duration);
             case SUBTASK:
-                task = new Subtask(name, description, id, status, epicId, startTime, duration);
-                break;
+                return new Subtask(name, description, id, status, epicId, startTime, duration);
             case EPIC:
-                task = new Epic(name, description, id);
-                task.setStatus(status);
-                task.setStartTime(startTime);
-                task.setDuration(duration);
-                break;
+                Epic epic = new Epic(name, description, id);
+                epic.setStatus(status);
+                epic.setStartTime(startTime);
+                epic.setDuration(duration);
+                epic.setEndTime(endTime);
+                return epic;
         }
-        return task;
+        return null;
     }
 }

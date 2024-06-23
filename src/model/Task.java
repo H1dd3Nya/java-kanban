@@ -16,16 +16,16 @@ public class Task {
         this.name = name;
         this.description = description;
         this.status = Status.NEW;
-        this.startTime = LocalDateTime.now();
-        this.duration = Duration.ofMinutes(15);
+        this.startTime = null;
+        this.duration = Duration.ofMinutes(0);
     }
 
     public Task(String name, String description, Status status) {
         this.name = name;
         this.description = description;
         this.status = status;
-        this.startTime = LocalDateTime.now();
-        this.duration = Duration.ofMinutes(15);
+        this.startTime = null;
+        this.duration = Duration.ofMinutes(0);
     }
 
     public Task(String name, String description, Integer id, Status status) {
@@ -33,11 +33,11 @@ public class Task {
         this.description = description;
         this.id = id;
         this.status = status;
-        this.startTime = LocalDateTime.now();
-        this.duration = Duration.ofMinutes(15);
+        this.startTime = null;
+        this.duration = Duration.ofMinutes(0);
     }
 
-    public Task(String name, String description, Status status, Duration duration, LocalDateTime startTime) {
+    public Task(String name, String description, Status status, LocalDateTime startTime, Duration duration) {
         this.name = name;
         this.description = description;
         this.status = status;
@@ -46,7 +46,7 @@ public class Task {
     }
 
     public Task(String name, String description, Integer id,
-                Status status, Duration duration, LocalDateTime startTime) {
+                Status status, LocalDateTime startTime, Duration duration) {
         this.name = name;
         this.description = description;
         this.id = id;
@@ -109,6 +109,9 @@ public class Task {
     }
 
     public LocalDateTime getEndTime() {
+        if (startTime == null || duration == null) {
+            return null;
+        }
         return startTime.plus(duration);
     }
 
@@ -133,8 +136,8 @@ public class Task {
                 ", description='" + description + '\'' +
                 ", id=" + id +
                 ", status=" + status +
-                ", duration=" + duration +
                 ", startTime=" + startTime +
+                ", duration=" + duration +
                 '}';
     }
 }

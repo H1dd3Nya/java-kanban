@@ -48,7 +48,8 @@ class FileBackedTaskManagerTest extends TaskManagerTest<FileBackedTaskManager> {
     @Test
     @DisplayName("Должен сохранить задачу в файл")
     void save_taskSaved() {
-        task = manager.createTask(new Task("", "", Status.NEW, Duration.ofMinutes(60), LocalDateTime.now()));
+        task = manager.createTask(new Task("", "", Status.NEW, LocalDateTime.now(),
+                Duration.ofMinutes(60)));
         epic = manager.createEpic(new Epic("Test", "test"));
         subtask = manager.createSubTask(new Subtask("Subtask2", "subtask", Status.NEW,
                 epic.getId(), LocalDateTime.now().plusDays(5), Duration.ofMinutes(100)));
@@ -97,8 +98,20 @@ class FileBackedTaskManagerTest extends TaskManagerTest<FileBackedTaskManager> {
         assertEqualsTask(task, taskFromFile);
         assertEqualsTask(epic, epicFromFile);
         assertEqualsTask(subtask, subtaskFromFile);
+    }
 
+    @Test
+    @DisplayName("Должен вернуть корректное время окончания эпика")
+    void loadDataFromFile_returnCorrectEpicEndTime() {
+        epic = manager.createEpic(new Epic("Test", "test"));
+        subtask = manager.createSubTask(new Subtask("Test", "Test", Status.NEW, epic.getId(),
+                LocalDateTime.now().plusYears(1), Duration.ofMinutes(120)));
+        LocalDateTime epicEndTime = epic.getEndTime();
 
+        createManager();
+        Epic epicFromFile = manager.getEpic(epic.getId());
+
+        assertEquals(epicEndTime, epicFromFile.getEndTime());
     }
 
     public static void assertEqualsTask(Task expected, Task actual) {

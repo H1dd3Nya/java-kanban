@@ -23,13 +23,13 @@ public class Subtask extends Task {
 
     public Subtask(String name, String description, Status status, int epicId,
                    LocalDateTime startTime, Duration duration) {
-        super(name, description, status, duration, startTime);
+        super(name, description, status, startTime, duration);
         this.epicId = epicId;
     }
 
     public Subtask(String name, String description, Integer id, Status status, int epicId,
                    LocalDateTime startTime, Duration duration) {
-        super(name, description, id, status, duration, startTime);
+        super(name, description, id, status, startTime, duration);
         this.epicId = epicId;
     }
 

@@ -35,7 +35,7 @@ public class FileBackedTaskManager extends InMemoryTaskManager {
 
     private void save() {
         try (final BufferedWriter writer = new BufferedWriter(new FileWriter(String.valueOf(path)))) {
-            writer.append("id,type,name,status,description,epic,startTime,duration");
+            writer.append("id,type,name,status,description,epic,startTime,duration,endTime");
             writer.newLine();
             for (Map.Entry<Integer, Task> entry : tasks.entrySet()) {
                 writer.append(TaskConverter.toString(entry.getValue()));
@@ -72,9 +72,12 @@ public class FileBackedTaskManager extends InMemoryTaskManager {
                         epics.put(id, (Epic) task);
                     } else {
                         subTasks.put(id, (Subtask) task);
+                        addSubTask((Subtask) task);
                     }
 
-                    sortedTasks.add(task);
+                    if (!(task.getStartTime() == null)) {
+                        sortedTasks.add(task);
+                    }
 
                     if (maxId < id) {
                         maxId = id;
@@ -96,124 +99,79 @@ public class FileBackedTaskManager extends InMemoryTaskManager {
     @Override
     public void removeAllTasks() {
         super.removeAllTasks();
-        try {
-            save();
-        } catch (ManagerIOException e) {
-            System.out.println(e.getMessage());
-        }
+        save();
     }
 
     @Override
     public void removeAllSubTasks() {
         super.removeAllSubTasks();
-        try {
-            save();
-        } catch (ManagerIOException e) {
-            System.out.println(e.getMessage());
-        }
+        save();
     }
 
     @Override
     public void removeAllEpics() {
         super.removeAllEpics();
-        try {
-            save();
-        } catch (ManagerIOException e) {
-            System.out.println(e.getMessage());
-        }
+        save();
     }
 
     @Override
     public Task createTask(Task task) {
         task = super.createTask(task);
-        try {
-            save();
-        } catch (ManagerIOException e) {
-            System.out.println(e.getMessage());
-        }
+        save();
+
         return task;
     }
 
     @Override
     public Subtask createSubTask(Subtask subtask) {
         subtask = super.createSubTask(subtask);
-        try {
-            save();
-        } catch (ManagerIOException e) {
-            System.out.println(e.getMessage());
-        }
+        save();
+
         return subtask;
     }
 
     @Override
     public Epic createEpic(Epic epic) {
         epic = super.createEpic(epic);
-        try {
-            save();
-        } catch (ManagerIOException e) {
-            System.out.println(e.getMessage());
-        }
+        save();
+
         return epic;
     }
 
     @Override
     public void updateTask(Task task) {
         super.updateTask(task);
-        try {
-            save();
-        } catch (ManagerIOException e) {
-            System.out.println(e.getMessage());
-        }
+        save();
     }
 
     @Override
     public void updateSubTask(Subtask subtask) {
         super.updateSubTask(subtask);
-        try {
-            save();
-        } catch (ManagerIOException e) {
-            System.out.println(e.getMessage());
-        }
+        save();
     }
 
     @Override
     public void updateEpic(Epic epic) {
         super.updateEpic(epic);
-        try {
-            save();
-        } catch (ManagerIOException e) {
-            System.out.println(e.getMessage());
-        }
+        save();
     }
 
     @Override
     public void deleteTask(int id) {
         super.deleteTask(id);
-        try {
-            save();
-        } catch (ManagerIOException e) {
-            System.out.println(e.getMessage());
-        }
+        save();
     }
 
     @Override
     public void deleteEpic(int id) {
         super.deleteEpic(id);
-        try {
-            save();
-        } catch (ManagerIOException e) {
-            System.out.println(e.getMessage());
-        }
+        save();
     }
 
     @Override
     public void deleteSubTask(int id) {
         super.deleteSubTask(id);
-        try {
-            save();
-        } catch (ManagerIOException e) {
-            System.out.println(e.getMessage());
-        }
+        save();
     }
 
 }

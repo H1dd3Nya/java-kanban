@@ -1,6 +1,5 @@
 package model;
 
-import java.time.Duration;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
@@ -8,7 +7,7 @@ import java.util.List;
 
 public class Epic extends Task {
     final List<Integer> subTasks = new ArrayList<>();
-    LocalDateTime endTime = null;
+    private LocalDateTime endTime = null;
 
     public Epic(String name, String description) {
         super(name, description, Status.NEW);
@@ -32,7 +31,7 @@ public class Epic extends Task {
         return endTime;
     }
 
-    public void setEndTime(LocalDateTime startTime, Duration duration) {
-        endTime = startTime.plus(duration);
+    public void setEndTime(LocalDateTime subtaskEndTime) {
+        endTime = subtaskEndTime;
     }
 }
