@@ -1,6 +1,6 @@
 package manager.file;
 
-import exception.ManagerSaveException;
+import exception.ManagerIOException;
 import manager.Managers;
 import manager.history.HistoryManager;
 import manager.task.InMemoryTaskManager;
@@ -35,7 +35,7 @@ public class FileBackedTaskManager extends InMemoryTaskManager {
 
     private void save() {
         try (final BufferedWriter writer = new BufferedWriter(new FileWriter(String.valueOf(path)))) {
-            writer.append("id,type,name,status,description,epic");
+            writer.append("id,type,name,status,description,epic,startTime,duration,endTime");
             writer.newLine();
             for (Map.Entry<Integer, Task> entry : tasks.entrySet()) {
                 writer.append(TaskConverter.toString(entry.getValue()));
@@ -52,7 +52,7 @@ public class FileBackedTaskManager extends InMemoryTaskManager {
                 writer.newLine();
             }
         } catch (IOException e) {
-            throw new ManagerSaveException(path);
+            throw new ManagerIOException(path);
         }
     }
 
@@ -67,12 +67,16 @@ public class FileBackedTaskManager extends InMemoryTaskManager {
                     Task task = TaskConverter.fromString(line);
                     final int id = task.getId();
                     if (task.getType() == Type.TASK) {
-                        task = new Task(task.getName(), task.getDescription(), task.getId(), task.getStatus());
                         tasks.put(id, task);
                     } else if (task.getType() == Type.EPIC) {
                         epics.put(id, (Epic) task);
                     } else {
                         subTasks.put(id, (Subtask) task);
+                        addSubTask((Subtask) task);
+                    }
+
+                    if (!(task.getStartTime() == null)) {
+                        sortedTasks.add(task);
                     }
 
                     if (maxId < id) {
@@ -86,12 +90,7 @@ public class FileBackedTaskManager extends InMemoryTaskManager {
                 }
             }
         } catch (IOException e) {
-            throw new ManagerSaveException(path);
-        }
-
-        for (Subtask subtask : subTasks.values()) {
-            addSubTask(subtask);
-            updateEpicStatus(getEpic(subtask.getEpicId()));
+            throw new ManagerIOException(path);
         }
 
         seq = maxId;
@@ -119,6 +118,7 @@ public class FileBackedTaskManager extends InMemoryTaskManager {
     public Task createTask(Task task) {
         task = super.createTask(task);
         save();
+
         return task;
     }
 
@@ -126,6 +126,7 @@ public class FileBackedTaskManager extends InMemoryTaskManager {
     public Subtask createSubTask(Subtask subtask) {
         subtask = super.createSubTask(subtask);
         save();
+
         return subtask;
     }
 
@@ -133,6 +134,7 @@ public class FileBackedTaskManager extends InMemoryTaskManager {
     public Epic createEpic(Epic epic) {
         epic = super.createEpic(epic);
         save();
+
         return epic;
     }
 
