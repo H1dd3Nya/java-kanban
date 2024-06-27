@@ -56,7 +56,7 @@ public class Task {
     }
 
 
-    public int getId() {
+    public Integer getId() {
         return id;
     }
 

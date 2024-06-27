@@ -1,0 +1,18 @@
+package api;
+
+public enum Endpoint {
+    GET_TASKS,
+    GET_TASKS_BY_ID,
+    POST_TASKS,
+    DELETE_TASKS,
+    GET_SUBTASKS,
+    GET_SUBTASKS_BY_ID,
+    POST_SUBTASKS,
+    DELETE_SUBTASKS,
+    GET_EPICS,
+    GET_EPICS_BY_ID,
+    GET_EPICS_SUBTASKS,
+    POST_EPICS,
+    DELETE_EPICS,
+    UNKNOWN
+}
