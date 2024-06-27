@@ -1,4 +1,4 @@
-package api;
+package api.handlers;
 
 import com.google.gson.Gson;
 import com.sun.net.httpserver.HttpExchange;
@@ -6,6 +6,8 @@ import com.sun.net.httpserver.HttpHandler;
 import exception.NotFoundException;
 import exception.ValidationException;
 import manager.task.TaskManager;
+import model.Endpoint;
+import model.Epic;
 import model.Subtask;
 
 import java.io.IOException;
@@ -17,11 +19,11 @@ import java.util.Optional;
 import static api.Utils.getGson;
 import static api.Utils.getId;
 
-public class SubtasksHandler extends BaseHttpHandler implements HttpHandler {
+public class EpicsHandler extends BaseHttpHandler implements HttpHandler {
     private final TaskManager manager;
     private final Gson gson;
 
-    public SubtasksHandler(TaskManager manager) {
+    public EpicsHandler(TaskManager manager) {
         this.manager = manager;
         this.gson = getGson();
     }
@@ -30,61 +32,82 @@ public class SubtasksHandler extends BaseHttpHandler implements HttpHandler {
     public void handle(HttpExchange exchange) throws IOException {
         try (exchange) {
             String path = exchange.getRequestURI().getPath();
-            Endpoint endpoint = getSubtasksEndpoint(path, exchange.getRequestMethod());
+            Endpoint endpoint = getEpicsEndpoint(path, exchange.getRequestMethod());
             Optional<Integer> id = getId(path);
 
             switch (endpoint) {
-                case GET_SUBTASKS:
+                case GET_EPICS:
                     try {
-                        List<Subtask> subtasks = manager.getAllSubtasks();
-                        sendText(exchange, 200, gson.toJson(subtasks));
+                        List<Epic> epics = manager.getAllEpics();
+                        sendText(exchange, 200, gson.toJson(epics));
                         break;
                     } catch (RuntimeException exception) {
                         sendInternalError(exchange, exception);
                         break;
                     }
-                case GET_SUBTASKS_BY_ID:
+                case GET_EPICS_BY_ID:
                     try {
                         if (id.isPresent()) {
                             try {
-                                Subtask subtask = manager.getSubTask(id.get());
-                                sendText(exchange, 200, gson.toJson(subtask));
+                                Epic epic = manager.getEpic(id.get());
+                                sendText(exchange, 200, gson.toJson(epic));
+                                break;
+                            } catch (NotFoundException exception) {
+                                sendNotFound(exchange, exception);
+                                break;
+                            }
+                        } else {
+                            sendBadRequest(exchange, "id указан неверно или null");
+                        }
+                        break;
+                    } catch (RuntimeException exception) {
+                        sendInternalError(exchange, exception);
+                    }
+                case GET_EPICS_SUBTASKS:
+                    try {
+                        if (id.isPresent()) {
+                            try {
+                                Epic epic = manager.getEpic(id.get());
+                                List<Subtask> epicSubtasks = manager.getEpicSubTasks(epic);
+                                sendText(exchange, 200, gson.toJson(epicSubtasks));
                                 break;
                             } catch (NotFoundException exception) {
                                 sendNotFound(exchange, exception);
                                 break;
                             }
                         }
-                        sendBadRequest(exchange, "id указан неверно или null");
                     } catch (RuntimeException exception) {
                         sendInternalError(exchange, exception);
                         break;
                     }
-                case POST_SUBTASKS:
+                case POST_EPICS:
                     try (InputStream inputStream = exchange.getRequestBody()) {
-
                         String body = new String(inputStream.readAllBytes(), StandardCharsets.UTF_8);
-                        Subtask subtaskFromJson = gson.fromJson(body, Subtask.class);
+                        Epic epicFromJson = gson.fromJson(body, Epic.class);
+                        Epic epicCorrect = new Epic(epicFromJson.getName(), epicFromJson.getDescription());
+
+                        if (epicFromJson.getId() != null) {
+                            epicCorrect.setId(epicFromJson.getId());
+                        }
 
                         if (id.isEmpty()) {
                             try {
-                                manager.createSubTask(subtaskFromJson);
-                                sendText(exchange, 201, "Подзадача успешно создана");
+                                manager.createEpic(epicCorrect);
+                                sendText(exchange, 201, "Эпик успешно создан");
                             } catch (ValidationException exception) {
                                 sendHasInteractions(exchange, exception);
-                            } catch (NotFoundException exception) {
-                                sendNotFound(exchange, exception);
+                                break;
                             }
                             break;
                         }
 
                         try {
-                            if (subtaskFromJson.getId().equals(id.get())) {
-                                manager.updateSubTask(subtaskFromJson);
-                                sendText(exchange, 201, "Задача успешно обновлена");
-                                break;
+                            if (epicFromJson.getId().equals(id.get())) {
+                                manager.updateEpic(epicCorrect);
+                                sendText(exchange, 201, "Эпик успешно обновлен");
+                            } else {
+                                sendBadRequest(exchange, "id указан неверно или null");
                             }
-                            sendBadRequest(exchange, "id указан неверно или null");
                             break;
                         } catch (NotFoundException exception) {
                             sendNotFound(exchange, exception);
@@ -96,17 +119,17 @@ public class SubtasksHandler extends BaseHttpHandler implements HttpHandler {
                         sendInternalError(exchange, exception);
                         break;
                     }
-
-                case DELETE_SUBTASKS:
+                case DELETE_EPICS:
                     try {
                         if (id.isPresent()) {
-                            manager.deleteSubTask(id.get());
+                            manager.deleteEpic(id.get());
                             sendText(exchange, 204, "");
                             break;
                         }
+                        sendNotFound(exchange, new NotFoundException("Эпик не найден"));
+                        break;
                     } catch (NotFoundException exception) {
                         sendNotFound(exchange, exception);
-                        break;
                     } catch (RuntimeException exception) {
                         sendInternalError(exchange, exception);
                         break;

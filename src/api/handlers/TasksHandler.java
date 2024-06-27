@@ -1,4 +1,4 @@
-package api;
+package api.handlers;
 
 import com.google.gson.Gson;
 import com.sun.net.httpserver.HttpExchange;
@@ -6,6 +6,7 @@ import com.sun.net.httpserver.HttpHandler;
 import exception.NotFoundException;
 import exception.ValidationException;
 import manager.task.TaskManager;
+import model.Endpoint;
 import model.Task;
 
 import java.io.IOException;

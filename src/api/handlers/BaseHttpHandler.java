@@ -1,6 +1,7 @@
-package api;
+package api.handlers;
 
 import com.sun.net.httpserver.HttpExchange;
+import model.Endpoint;
 
 import java.io.IOException;
 import java.io.OutputStream;
