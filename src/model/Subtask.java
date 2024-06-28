@@ -41,4 +41,5 @@ public class Subtask extends Task {
     public Type getType() {
         return Type.SUBTASK;
     }
+
 }

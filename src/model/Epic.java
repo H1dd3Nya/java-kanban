@@ -6,15 +6,19 @@ import java.util.List;
 
 
 public class Epic extends Task {
-    final List<Integer> subTasks = new ArrayList<>();
-    private LocalDateTime endTime = null;
+    final List<Integer> subTasks;
+    private LocalDateTime endTime;
 
     public Epic(String name, String description) {
         super(name, description, Status.NEW);
+        this.subTasks = new ArrayList<>();
+        this.endTime = null;
     }
 
     public Epic(String name, String description, Integer id) {
         super(name, description, id, Status.NEW);
+        this.subTasks = new ArrayList<>();
+        this.endTime = null;
     }
 
     public List<Integer> getSubTasks() {
