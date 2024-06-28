@@ -53,7 +53,6 @@ public class InMemoryTaskManager implements TaskManager {
                 break;
             }
         }
-        seq = seq - tasks.size();
         tasks.clear();
     }
 
@@ -68,7 +67,6 @@ public class InMemoryTaskManager implements TaskManager {
                 break;
             }
         }
-        seq = seq - subTasks.size();
         subTasks.clear();
     }
 
@@ -77,7 +75,6 @@ public class InMemoryTaskManager implements TaskManager {
         for (Integer id : epics.keySet()) {
             historyManager.remove(id);
         }
-        seq = seq - subTasks.size() - epics.size();
         subTasks.clear();
         epics.clear();
     }
@@ -223,7 +220,6 @@ public class InMemoryTaskManager implements TaskManager {
             sortedTasks.remove(tasks.get(id));
             tasks.remove(id);
             historyManager.remove(id);
-            seq--;
         } catch (NullPointerException e) {
             throw new NotFoundException("Задача не найдена");
         }
@@ -241,7 +237,6 @@ public class InMemoryTaskManager implements TaskManager {
 
             epics.remove(id);
             historyManager.remove(id);
-            seq--;
         } catch (NullPointerException exception) {
             throw new NotFoundException("Эпик не найден");
         }
@@ -255,7 +250,6 @@ public class InMemoryTaskManager implements TaskManager {
             sortedTasks.remove(subTasks.get(id));
             subTasks.remove(id);
             historyManager.remove(id);
-            seq--;
         } catch (NullPointerException exception) {
             throw new NotFoundException("Подзадача не найдена");
         }
@@ -292,7 +286,6 @@ public class InMemoryTaskManager implements TaskManager {
             Epic epic = epics.get(subtask.getEpicId());
             epic.getSubTasks().add(subtask.getId());
         } catch (NullPointerException exception) {
-            seq--;
             throw new NotFoundException("Эпик для подзадачи не найден");
         }
     }

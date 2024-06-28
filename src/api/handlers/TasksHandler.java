@@ -34,100 +34,104 @@ public class TasksHandler extends BaseHttpHandler implements HttpHandler {
             Endpoint endpoint = getTasksEndpoint(path, exchange.getRequestMethod());
             Optional<Integer> id = getId(path);
 
-            switch (endpoint) {
-                case GET_TASKS:
-                    try {
-                        List<Task> tasks = manager.getAllTasks();
-                        sendText(exchange, 200, gson.toJson(tasks));
+            try {
+                switch (endpoint) {
+                    case GET_TASKS:
+                        getTasks(exchange);
                         break;
-                    } catch (RuntimeException exception) {
-
-                        sendInternalError(exchange, exception);
-                        break;
-                    }
-                case GET_TASKS_BY_ID:
-                    try {
-
+                    case GET_TASKS_BY_ID:
                         if (id.isPresent()) {
-
-                            try {
-                                Task task = manager.getTask(id.get());
-                                sendText(exchange, 200, gson.toJson(task));
-                                break;
-                            } catch (NotFoundException exception) {
-                                sendNotFound(exchange, exception);
-                                break;
-                            }
-
+                            getTaskById(exchange, id.get());
+                            break;
                         }
 
                         sendBadRequest(exchange, "id указан неверно или null");
                         break;
-                    } catch (RuntimeException exception) {
-
-                        sendInternalError(exchange, exception);
-                        break;
-                    }
-                case POST_TASKS:
-                    try (InputStream inputStream = exchange.getRequestBody()) {
-                        String body = new String(inputStream.readAllBytes(), StandardCharsets.UTF_8);
-                        Task taskFromJson = gson.fromJson(body, Task.class);
-
-                        if (id.isEmpty()) {
-                            try {
-                                manager.createTask(taskFromJson);
-                                sendText(exchange, 201, "Задача успешно создана");
-                                break;
-                            } catch (ValidationException exception) {
-                                sendHasInteractions(exchange, exception);
-                            }
-                            break;
-                        }
-
-                        try {
-
-                            if (taskFromJson.getId().equals(id.get())) {
-                                manager.updateTask(taskFromJson);
-                                sendText(exchange, 201, "Задача успешно обновлена");
-                                break;
-                            }
-
-                            sendBadRequest(exchange, "id указан неверно или null");
-                            break;
-                        } catch (NotFoundException exception) {
-
-                            sendNotFound(exchange, exception);
-                        } catch (ValidationException exception) {
-
-                            sendHasInteractions(exchange, exception);
-                        }
-
-                        break;
-                    } catch (RuntimeException exception) {
-
-                        sendInternalError(exchange, exception);
-                    }
-                case DELETE_TASKS:
-                    try {
-
+                    case POST_TASKS:
                         if (id.isPresent()) {
-                            manager.deleteTask(id.get());
-                            sendText(exchange, 204, "");
+                            postUpdateTask(exchange, id.get());
                             break;
                         }
 
-                    } catch (NotFoundException exception) {
-
-                        sendNotFound(exchange, exception);
+                        postCreateTask(exchange);
                         break;
-                    } catch (RuntimeException exception) {
+                    case DELETE_TASKS:
+                        if (id.isPresent()) {
+                            deleteTask(exchange, id.get());
+                            break;
+                        }
 
-                        sendInternalError(exchange, exception);
+                        sendBadRequest(exchange, "id указан неверно или null");
                         break;
-                    }
-                case UNKNOWN:
-                    sendBadRequest(exchange, "Не найден указанный эндпоинт");
+                    case UNKNOWN:
+                        sendBadRequest(exchange, "Не найден указанный эндпоинт");
+                }
+            } catch (ValidationException exception) {
+                sendHasInteractions(exchange, exception);
+            } catch (NotFoundException exception) {
+                sendNotFound(exchange, exception);
+            } catch (RuntimeException exception) {
+                sendInternalError(exchange, exception);
             }
         }
+    }
+
+    private Endpoint getTasksEndpoint(String requestPath, String requestMethod) {
+        String[] pathParts = requestPath.split("/");
+
+        if (requestMethod.equals("GET") && pathParts.length == 2) {
+            return Endpoint.GET_TASKS;
+        } else if (requestMethod.equals("GET") && pathParts.length == 3) {
+            return Endpoint.GET_TASKS_BY_ID;
+        } else {
+            switch (requestMethod) {
+                case "POST":
+                    return Endpoint.POST_TASKS;
+                case "DELETE":
+                    return Endpoint.DELETE_TASKS;
+            }
+        }
+
+        return Endpoint.UNKNOWN;
+    }
+
+    private void getTasks(HttpExchange exchange) throws IOException {
+        List<Task> tasks = manager.getAllTasks();
+        sendText(exchange, 200, gson.toJson(tasks));
+    }
+
+    private void getTaskById(HttpExchange exchange, Integer id) throws IOException {
+        Task task = manager.getTask(id);
+        sendText(exchange, 200, gson.toJson(task));
+    }
+
+    private void postCreateTask(HttpExchange exchange) throws IOException {
+        try (InputStream inputStream = exchange.getRequestBody()) {
+            String body = new String(inputStream.readAllBytes(), StandardCharsets.UTF_8);
+            Task taskFromJson = gson.fromJson(body, Task.class);
+
+            manager.createTask(taskFromJson);
+            sendText(exchange, 201, "Задача успешно создана");
+        }
+    }
+
+    private void postUpdateTask(HttpExchange exchange, Integer id) throws IOException {
+        try (InputStream inputStream = exchange.getRequestBody()) {
+            String body = new String(inputStream.readAllBytes(), StandardCharsets.UTF_8);
+            Task taskFromJson = gson.fromJson(body, Task.class);
+
+            if (!taskFromJson.getId().equals(id)) {
+                sendBadRequest(exchange, "id указан неверно или null");
+                return;
+            }
+
+            manager.updateTask(taskFromJson);
+            sendText(exchange, 201, "Задача успешно обновлена");
+        }
+    }
+
+    private void deleteTask(HttpExchange exchange, Integer id) throws IOException {
+        manager.deleteTask(id);
+        sendText(exchange, 204, "");
     }
 }

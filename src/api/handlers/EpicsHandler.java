@@ -35,108 +35,126 @@ public class EpicsHandler extends BaseHttpHandler implements HttpHandler {
             Endpoint endpoint = getEpicsEndpoint(path, exchange.getRequestMethod());
             Optional<Integer> id = getId(path);
 
-            switch (endpoint) {
-                case GET_EPICS:
-                    try {
-                        List<Epic> epics = manager.getAllEpics();
-                        sendText(exchange, 200, gson.toJson(epics));
+            try {
+                switch (endpoint) {
+                    case GET_EPICS:
+                        getEpic(exchange);
                         break;
-                    } catch (RuntimeException exception) {
-                        sendInternalError(exchange, exception);
-                        break;
-                    }
-                case GET_EPICS_BY_ID:
-                    try {
+                    case GET_EPICS_BY_ID:
                         if (id.isPresent()) {
-                            try {
-                                Epic epic = manager.getEpic(id.get());
-                                sendText(exchange, 200, gson.toJson(epic));
-                                break;
-                            } catch (NotFoundException exception) {
-                                sendNotFound(exchange, exception);
-                                break;
-                            }
-                        } else {
-                            sendBadRequest(exchange, "id указан неверно или null");
-                        }
-                        break;
-                    } catch (RuntimeException exception) {
-                        sendInternalError(exchange, exception);
-                    }
-                case GET_EPICS_SUBTASKS:
-                    try {
-                        if (id.isPresent()) {
-                            try {
-                                Epic epic = manager.getEpic(id.get());
-                                List<Subtask> epicSubtasks = manager.getEpicSubTasks(epic);
-                                sendText(exchange, 200, gson.toJson(epicSubtasks));
-                                break;
-                            } catch (NotFoundException exception) {
-                                sendNotFound(exchange, exception);
-                                break;
-                            }
-                        }
-                    } catch (RuntimeException exception) {
-                        sendInternalError(exchange, exception);
-                        break;
-                    }
-                case POST_EPICS:
-                    try (InputStream inputStream = exchange.getRequestBody()) {
-                        String body = new String(inputStream.readAllBytes(), StandardCharsets.UTF_8);
-                        Epic epicFromJson = gson.fromJson(body, Epic.class);
-                        Epic epicCorrect = new Epic(epicFromJson.getName(), epicFromJson.getDescription());
-
-                        if (epicFromJson.getId() != null) {
-                            epicCorrect.setId(epicFromJson.getId());
-                        }
-
-                        if (id.isEmpty()) {
-                            try {
-                                manager.createEpic(epicCorrect);
-                                sendText(exchange, 201, "Эпик успешно создан");
-                            } catch (ValidationException exception) {
-                                sendHasInteractions(exchange, exception);
-                                break;
-                            }
+                            getEpicById(exchange, id.get());
                             break;
                         }
 
-                        try {
-                            if (epicFromJson.getId().equals(id.get())) {
-                                manager.updateEpic(epicCorrect);
-                                sendText(exchange, 201, "Эпик успешно обновлен");
-                            } else {
-                                sendBadRequest(exchange, "id указан неверно или null");
-                            }
-                            break;
-                        } catch (NotFoundException exception) {
-                            sendNotFound(exchange, exception);
-                        } catch (ValidationException exception) {
-                            sendHasInteractions(exchange, exception);
-                        }
+                        sendBadRequest(exchange, "id указан неверно или null");
                         break;
-                    } catch (RuntimeException exception) {
-                        sendInternalError(exchange, exception);
-                        break;
-                    }
-                case DELETE_EPICS:
-                    try {
+                    case GET_EPICS_SUBTASKS:
                         if (id.isPresent()) {
-                            manager.deleteEpic(id.get());
-                            sendText(exchange, 204, "");
+                            getEpicSubtasks(exchange, id.get());
                             break;
                         }
-                        sendNotFound(exchange, new NotFoundException("Эпик не найден"));
+
+                        sendBadRequest(exchange, "id указан неверно или null");
                         break;
-                    } catch (NotFoundException exception) {
-                        sendNotFound(exchange, exception);
-                    } catch (RuntimeException exception) {
-                        sendInternalError(exchange, exception);
+                    case POST_EPICS:
+                        if (id.isPresent()) {
+                            postUpdateEpic(exchange, id.get());
+                            break;
+                        }
+
+                        postCreateEpic(exchange);
                         break;
-                    }
-                case UNKNOWN:
-                    sendBadRequest(exchange, "Не найден указанный эндпоинт");
+                    case DELETE_EPICS:
+                        if (id.isPresent()) {
+                            deleteEpic(exchange, id.get());
+                            break;
+                        }
+
+                        sendBadRequest(exchange, "id указан неверно или null");
+                        break;
+                    case UNKNOWN:
+                        sendBadRequest(exchange, "Не найден указанный эндпоинт");
+                }
+            } catch (ValidationException exception) {
+                sendHasInteractions(exchange, exception);
+            } catch (NotFoundException exception) {
+                sendNotFound(exchange, exception);
+            } catch (RuntimeException exception) {
+                sendInternalError(exchange, exception);
             }
         }
+    }
+
+    private Endpoint getEpicsEndpoint(String requestPath, String requestMethod) {
+        String[] pathParts = requestPath.split("/");
+
+        if (pathParts.length == 4) {
+            return Endpoint.GET_EPICS_SUBTASKS;
+        }
+
+        if (requestMethod.equals("GET") && pathParts.length == 2) {
+            return Endpoint.GET_EPICS;
+        } else if (requestMethod.equals("GET") && pathParts.length == 3) {
+            return Endpoint.GET_EPICS_BY_ID;
+        } else {
+            switch (requestMethod) {
+                case "POST":
+                    return Endpoint.POST_EPICS;
+                case "DELETE":
+                    return Endpoint.DELETE_EPICS;
+            }
+        }
+
+        return Endpoint.UNKNOWN;
+    }
+
+    private void getEpic(HttpExchange exchange) throws IOException {
+        List<Epic> epics = manager.getAllEpics();
+        sendText(exchange, 200, gson.toJson(epics));
+    }
+
+    private void getEpicById(HttpExchange exchange, Integer id) throws IOException {
+        Epic epic = manager.getEpic(id);
+        sendText(exchange, 200, gson.toJson(epic));
+    }
+
+    private void getEpicSubtasks(HttpExchange exchange, Integer id) throws IOException {
+        Epic epic = manager.getEpic(id);
+        List<Subtask> epicSubtasks = manager.getEpicSubTasks(epic);
+        sendText(exchange, 200, gson.toJson(epicSubtasks));
+    }
+
+    private void postCreateEpic(HttpExchange exchange) throws IOException {
+        try (InputStream inputStream = exchange.getRequestBody()) {
+            String body = new String(inputStream.readAllBytes(), StandardCharsets.UTF_8);
+            Epic epicFromJson = gson.fromJson(body, Epic.class);
+
+            manager.createEpic(epicFromJson);
+            sendText(exchange, 201, "Эпик успешно создан");
+        }
+    }
+
+    private void postUpdateEpic(HttpExchange exchange, Integer id) throws IOException {
+        try (InputStream inputStream = exchange.getRequestBody()) {
+            String body = new String(inputStream.readAllBytes(), StandardCharsets.UTF_8);
+            Epic epicFromJson = gson.fromJson(body, Epic.class);
+            Epic epicCorrect = new Epic(epicFromJson.getName(), epicFromJson.getDescription());
+
+            if (!epicFromJson.getId().equals(id)) {
+                sendBadRequest(exchange, "id указан неверно или null");
+            }
+
+            if (epicFromJson.getId() != null) {
+                epicCorrect.setId(epicFromJson.getId());
+            }
+
+            manager.updateEpic(epicCorrect);
+            sendText(exchange, 201, "Эпик успешно обновлен");
+        }
+    }
+
+    private void deleteEpic(HttpExchange exchange, Integer id) throws IOException {
+        manager.deleteEpic(id);
+        sendText(exchange, 204, "");
     }
 }

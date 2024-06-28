@@ -1,7 +1,6 @@
 package api.handlers;
 
 import com.sun.net.httpserver.HttpExchange;
-import model.Endpoint;
 
 import java.io.IOException;
 import java.io.OutputStream;
@@ -70,66 +69,5 @@ public class BaseHttpHandler {
                 os.write(resp);
             }
         }
-    }
-
-    protected Endpoint getTasksEndpoint(String requestPath, String requestMethod) {
-        String[] pathParts = requestPath.split("/");
-
-        if (requestMethod.equals("GET") && pathParts.length == 2) {
-            return Endpoint.GET_TASKS;
-        } else if (requestMethod.equals("GET") && pathParts.length == 3) {
-            return Endpoint.GET_TASKS_BY_ID;
-        } else {
-            switch (requestMethod) {
-                case "POST":
-                    return Endpoint.POST_TASKS;
-                case "DELETE":
-                    return Endpoint.DELETE_TASKS;
-            }
-        }
-
-        return Endpoint.UNKNOWN;
-    }
-
-    protected Endpoint getSubtasksEndpoint(String requestPath, String requestMethod) {
-        String[] pathParts = requestPath.split("/");
-
-        if (requestMethod.equals("GET") && pathParts.length == 2) {
-            return Endpoint.GET_SUBTASKS;
-        } else if (requestMethod.equals("GET") && pathParts.length == 3) {
-            return Endpoint.GET_SUBTASKS_BY_ID;
-        } else {
-            switch (requestMethod) {
-                case "POST":
-                    return Endpoint.POST_SUBTASKS;
-                case "DELETE":
-                    return Endpoint.DELETE_SUBTASKS;
-            }
-        }
-
-        return Endpoint.UNKNOWN;
-    }
-
-    protected Endpoint getEpicsEndpoint(String requestPath, String requestMethod) {
-        String[] pathParts = requestPath.split("/");
-
-        if (pathParts.length == 4) {
-            return Endpoint.GET_EPICS_SUBTASKS;
-        }
-
-        if (requestMethod.equals("GET") && pathParts.length == 2) {
-            return Endpoint.GET_EPICS;
-        } else if (requestMethod.equals("GET") && pathParts.length == 3) {
-            return Endpoint.GET_EPICS_BY_ID;
-        } else {
-            switch (requestMethod) {
-                case "POST":
-                    return Endpoint.POST_EPICS;
-                case "DELETE":
-                    return Endpoint.DELETE_EPICS;
-            }
-        }
-
-        return Endpoint.UNKNOWN;
     }
 }
